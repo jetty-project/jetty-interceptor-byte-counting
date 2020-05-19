@@ -48,6 +48,7 @@ public class ByteCountingResponseInterceptor implements HttpOutput.Interceptor
     @Override
     public void write(ByteBuffer content, boolean last, Callback callback)
     {
+        LOG.debug("write({}, {}, {})", content, last, callback);
         byteCount += content.remaining();
         if (last)
         {

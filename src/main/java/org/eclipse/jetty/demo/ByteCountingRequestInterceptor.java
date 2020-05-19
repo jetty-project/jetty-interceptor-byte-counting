@@ -26,16 +26,27 @@ import org.eclipse.jetty.util.log.Logger;
 public class ByteCountingRequestInterceptor implements HttpInput.Interceptor
 {
     private static final Logger LOG = Log.getLogger(ByteCountingRequestInterceptor.class);
+    private final ByteCountingListener listener;
+    private final Request request;
+    private long byteCount;
 
-    public ByteCountingRequestInterceptor(ByteCountingListener listener, Request baseRequest)
+    public ByteCountingRequestInterceptor(ByteCountingListener listener, Request request)
     {
-
+        this.listener = listener;
+        this.request = request;
     }
 
     @Override
     public HttpInput.Content readFrom(HttpInput.Content content)
     {
         LOG.debug("readFrom({})", content);
-        return content;
+        if (content instanceof HttpInput.EofContent)
+        {
+            // this is EOF on the input
+            listener.onRequestByteCount(request, byteCount);
+        }
+
+        byteCount += content.remaining();
+        return new HttpInput.Content(content.getByteBuffer());
     }
 }
